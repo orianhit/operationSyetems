@@ -49,6 +49,13 @@ char **getArgs(char *cmd, int *argsSize) {
      return programArgs;
 }
 
+void freeArr(char **programArgs, int argsSize) {
+     for(int i=0; i++; i< argsSize) {
+          free(programArgs[i]);
+     }
+     free(programArgs);
+}
+
 int runCmd(char *cmd) {
      int child_status;
      int argsSize = 0;
@@ -69,10 +76,7 @@ int runCmd(char *cmd) {
                success = 1;
           }
      }
-     for(int i=0; i++; i< argsSize) {
-          free(programArgs[i]);
-     }
-     free(programArgs);
+     freeArr(programArgs, argsSize);
      return success;
 }
 

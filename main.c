@@ -40,7 +40,7 @@ char **getArgs(char *cmd, int *argsSize) {
      char *token;
      char **programArgs = (char **) malloc(sizeof(char *) * 0);
 
-     // not static strtok
+     // Non static strtok
      while ((token = strtok_r(cmd, " ", &cmd))) {
           programArgs = (char **) realloc(programArgs, sizeof(char *) * (*argsSize+1));
           programArgs[(*argsSize)++] = token;
@@ -59,7 +59,7 @@ int runCmd(char *cmd) {
      if (pid == -1) {
           printf("Failed to create proc\n");
      } else if (pid == 0) {
-          // argv_for_program cleared after exit
+          // programArgs cleared after exit
           execv(programArgs[0], programArgs);
           _exit(127);
      } else {

@@ -36,23 +36,44 @@ char *concatenate(char *a, char *c){
      return str;
 }
 
-int runcmd(char *cmd) {
+char **getArgs(char *cmd, int *argsSize) {
+     char *token;
+     char **programArgs = (char **) malloc(sizeof(char *) * 0);
+
+     // not static strtok
+     while ((token = strtok_r(cmd, " ", &cmd))) {
+          programArgs = (char **) realloc(programArgs, sizeof(char *) * (*argsSize+1));
+          programArgs[(*argsSize)++] = token;
+     }
+     programArgs[*argsSize] = NULL;
+     return programArgs;
+}
+
+int runCmd(char *cmd) {
      int child_status;
-     char *argv_for_program[] = { cmd, NULL };
+     int argsSize = 0;
+     char **programArgs = getArgs(cmd, &argsSize);
      pid_t pid = fork();
+     int success = 0;
 
      if (pid == -1) {
           printf("Failed to create proc\n");
      } else if (pid == 0) {
-          execv(cmd, argv_for_program);
+          // argv_for_program cleared after exit
+          execv(programArgs[0], programArgs);
           _exit(127);
      } else {
           int child_pid = wait(&child_status);
+          int status = WEXITSTATUS(child_status);
           if (child_pid > 0 && WIFEXITED(child_status) && WEXITSTATUS(child_status) != 127) {
-               return 1;
+               success = 1;
           }
      }
-     return 0;
+     for(int i=0; i++; i< argsSize) {
+          free(programArgs[i]);
+     }
+     free(programArgs);
+     return success;
 }
 
 
@@ -67,15 +88,15 @@ void main() {
 
      while(1) {
           printPrompt();
-          scanf(" %s", command);
-          if (! strcmp(command, EXIT_COMMAND)) break;
+          gets(command);
+          if (!strcmp(command, EXIT_COMMAND)) break;
 
           paths_env = strdup(paths_env_c);          
           path_env = strtok(paths_env, PATH_ENV_SEPERATOR);
           
           while( path_env != NULL ) {
                full_command = concatenate(path_env, command);
-               status = runcmd(full_command);
+               status = runCmd(full_command);
 
                free(full_command);
 

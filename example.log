@@ -1,0 +1,11 @@
+2022-03-18 11:57:04 user@user-vmwarevirtualplatform:/home/user/projects/one$ whoami
+user
+2022-03-18 11:57:07 user@user-vmwarevirtualplatform:/home/user/projects/one$ ls -ll
+total 48
+-rwxrwxr-x 1 user user 16832 Mar  7 15:42 a.out
+-rwxrwxr-x 1 user user 23144 Mar 18 11:56 main
+-rw-rw-r-- 1 user user  2987 Mar 18 11:56 main.c
+2022-03-18 11:57:11 user@user-vmwarevirtualplatform:/home/user/projects/one$ hello
+No such command hello
+2022-03-18 11:57:13 user@user-vmwarevirtualplatform:/home/user/projects/one$ leave
+[1] + Done

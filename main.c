@@ -41,14 +41,14 @@ int runcmd(char *cmd) {
           execv(cmd, argv_for_program);
           _exit(127);
      } else {
-          int status;
-          if (waitpid(pid, &child_status, 0) > 0) {
-               if(WIFEXITED(child_status) && WEXITSTATUS(child_status)) {
+          int child_pid = wait(&child_status);
+          if (child_pid > 0) {
+               if(WIFEXITED(child_status)) {
                     if (WEXITSTATUS(child_status) != 127) {
                          return 1;
                     }
                } else {
-                    return 1;
+                    return 0;
                }
           }
      }

@@ -6,24 +6,32 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
 
+struct passwd *getpwuid(uid_t uid);
+
+const char PATH_ENV_SEPERATOR[] = ":";
+const char PATH_CONCAT_CHAR[] = "/";
+const char EXIT_COMMAND[] = "leave";
 
 void printPrompt() {
      time_t t = time(NULL);
      struct tm tm = *localtime(&t);
      char hostname[HOST_NAME_MAX+1];
-     char cwd[PATH_MAX];
+     char cwd[PATH_MAX + 1];
      gethostname(hostname, sizeof(hostname));
      getcwd(cwd, sizeof(cwd));
-     printf("%d-%02d-%02d %02d:%02d:%02d %s $ %s : \n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, hostname, cwd);
+     struct passwd *p = getpwuid(getuid());
+
+     printf("%d-%02d-%02d %02d:%02d:%02d %s@%s:%s$ ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, p->pw_name, hostname, cwd);
 }
 
-char *concatenate(char *a, char *b, char *c){
-     int size = strlen(a) + strlen(b) + strlen(c) + 1;
+char *concatenate(char *a, char *c){
+     int size = strlen(a) + strlen(PATH_CONCAT_CHAR) + strlen(c) + 1;
      char *str = malloc(size);
-     strcpy (str, a);
-     strcat (str, b);
-     strcat (str, c); 
+     strcpy(str, a);
+     strcat(str, PATH_CONCAT_CHAR);
+     strcat(str, c); 
 
      return str;
 }
@@ -34,7 +42,7 @@ int runcmd(char *cmd) {
      pid_t pid = fork();
 
      if (pid == -1) {
-          printf("failed to create proc \n");
+          printf("Failed to create proc\n");
      } else if (pid == 0) {
           execv(cmd, argv_for_program);
           _exit(127);
@@ -49,32 +57,32 @@ int runcmd(char *cmd) {
 
 
 void main() {
-     char command[PATH_MAX+1];
-     int status = 0;
-     char *full_command;
-     char paths_env[PATH_MAX+1];
-     char *path_env;
      const char *paths_env_c = getenv("PATH");
+     int status = 0;
+     char command[PATH_MAX+1];
+     char *full_command;
+     char *paths_env;
+     char *path_env;
+
 
      while(1) {
           printPrompt();
           scanf(" %s", command);
-          if (! strcmp(command, "leave")) break;
+          if (! strcmp(command, EXIT_COMMAND)) break;
 
-          strcpy(paths_env, paths_env_c);
-          
-          path_env = strtok(paths_env, ":");
+          paths_env = strdup(paths_env_c);          
+          path_env = strtok(paths_env, PATH_ENV_SEPERATOR);
           
           while( path_env != NULL ) {
-               full_command = concatenate(path_env, "/", command);
+               full_command = concatenate(path_env, command);
                status = runcmd(full_command);
 
                free(full_command);
 
                if(status) break;
-               path_env = strtok(NULL, ":");
+               path_env = strtok(NULL, PATH_ENV_SEPERATOR);
           }
-          if (!status) printf("no such command %s \n", command);
-
+          free(paths_env);
+          if (!status) printf("No such command %s\n", command);
      }
 }
